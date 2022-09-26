@@ -22,22 +22,10 @@ import java.util.Map;
 /**
  * Encapsulates {@link MultipartUpload} and corresponding {@code contentType}.
  */
-class MultipartUploadInfo {
+record MultipartUploadInfo(MultipartUpload upload,
+                           String contentType,
+                           String contentEncoding,
+                           Map<String, String> userMetadata,
+                           String bucket) {
 
-  final MultipartUpload upload;
-  final String contentType;
-  final String contentEncoding;
-  final Map<String, String> userMetadata;
-  final String bucket;
-
-  MultipartUploadInfo(final MultipartUpload upload, final String contentType,
-      final String contentEncoding,
-      final Map<String, String> userMetadata,
-      String bucket) {
-    this.upload = upload;
-    this.contentType = contentType;
-    this.contentEncoding = contentEncoding;
-    this.userMetadata = userMetadata;
-    this.bucket = bucket;
-  }
 }

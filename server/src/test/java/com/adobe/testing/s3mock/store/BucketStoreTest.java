@@ -42,8 +42,8 @@ class BucketStoreTest {
   @Test
   void testCreateBucket() {
     final BucketMetadata bucket = bucketStore.createBucket(TEST_BUCKET_NAME, false);
-    assertThat(bucket.getName()).as("Bucket should have been created.").endsWith(TEST_BUCKET_NAME);
-    assertThat(bucket.getPath()).exists();
+    assertThat(bucket.name()).as("Bucket should have been created.").endsWith(TEST_BUCKET_NAME);
+    assertThat(bucket.path()).exists();
   }
 
   @Test
@@ -86,7 +86,7 @@ class BucketStoreTest {
     BucketMetadata bucket = bucketStore.getBucketMetadata(TEST_BUCKET_NAME);
 
     assertThat(bucket).as("Bucket should not be null").isNotNull();
-    assertThat(bucket.getName()).as("Bucket name should end with " + TEST_BUCKET_NAME)
+    assertThat(bucket.name()).as("Bucket name should end with " + TEST_BUCKET_NAME)
         .isEqualTo(TEST_BUCKET_NAME);
   }
 
@@ -96,11 +96,11 @@ class BucketStoreTest {
     BucketMetadata bucket = bucketStore.getBucketMetadata(TEST_BUCKET_NAME);
 
     assertThat(bucket).as("Bucket should not be null").isNotNull();
-    assertThat(bucket.getName()).as("Bucket name should end with " + TEST_BUCKET_NAME)
+    assertThat(bucket.name()).as("Bucket name should end with " + TEST_BUCKET_NAME)
         .isEqualTo(TEST_BUCKET_NAME);
-    assertThat(bucket.getObjectLockConfiguration()).isNotNull();
-    assertThat(bucket.getObjectLockConfiguration().objectLockRule()).isNull();
-    assertThat(bucket.getObjectLockConfiguration().objectLockEnabled()).isEqualTo(ENABLED);
+    assertThat(bucket.objectLockConfiguration()).isNotNull();
+    assertThat(bucket.objectLockConfiguration().objectLockRule()).isNull();
+    assertThat(bucket.objectLockConfiguration().objectLockEnabled()).isEqualTo(ENABLED);
   }
 
   @Test
@@ -119,7 +119,7 @@ class BucketStoreTest {
   @AfterEach
   void cleanupStores() {
     for (final BucketMetadata bucket : bucketStore.listBuckets()) {
-      bucketStore.deleteBucket(bucket.getName());
+      bucketStore.deleteBucket(bucket.name());
     }
   }
 }

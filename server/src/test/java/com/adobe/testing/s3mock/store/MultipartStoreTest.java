@@ -421,7 +421,7 @@ class MultipartStoreTest {
         bucketMetadata, destinationId, uploadId);
 
     assertThat(
-        Paths.get(bucketMetadata.getPath().toString(), destinationId.toString(),
+        Paths.get(bucketMetadata.path().toString(), destinationId.toString(),
                 uploadId, partNumber + ".part")
             .toFile()
             .exists()).as("Part does not exist!").isTrue();
@@ -465,10 +465,12 @@ class MultipartStoreTest {
   }
 
   private BucketMetadata metadataFrom(String bucketName) {
-    BucketMetadata metadata = new BucketMetadata();
-    metadata.setName(bucketName);
-    metadata.setPath(Paths.get(rootFolder.toString(), bucketName));
-    return metadata;
+    return new BucketMetadata(
+        bucketName,
+        new Date().toString(),
+        null,
+        Paths.get(rootFolder.toString(), bucketName)
+    );
   }
 
   private UUID managedId() {

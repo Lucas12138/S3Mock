@@ -36,7 +36,6 @@ import com.adobe.testing.s3mock.dto.ListBucketResultV2;
 import com.adobe.testing.s3mock.dto.ObjectLockConfiguration;
 import com.adobe.testing.s3mock.dto.Prefix;
 import com.adobe.testing.s3mock.dto.S3Object;
-import com.adobe.testing.s3mock.dto.S3ObjectIdentifier;
 import com.adobe.testing.s3mock.store.BucketMetadata;
 import com.adobe.testing.s3mock.store.BucketStore;
 import com.adobe.testing.s3mock.store.ObjectStore;
@@ -107,12 +106,12 @@ public class BucketService {
 
   public void setObjectLockConfiguration(String bucketName, ObjectLockConfiguration configuration) {
     BucketMetadata bucketMetadata = bucketStore.getBucketMetadata(bucketName);
-    bucketMetadata.setObjectLockConfiguration(configuration);
+    bucketStore.storeObjectLockConfiguration(bucketMetadata, configuration);
   }
 
   public ObjectLockConfiguration getObjectLockConfiguration(String bucketName) {
     BucketMetadata bucketMetadata = bucketStore.getBucketMetadata(bucketName);
-    ObjectLockConfiguration objectLockConfiguration = bucketMetadata.getObjectLockConfiguration();
+    ObjectLockConfiguration objectLockConfiguration = bucketMetadata.objectLockConfiguration();
     if (objectLockConfiguration != null) {
       return objectLockConfiguration;
     } else {

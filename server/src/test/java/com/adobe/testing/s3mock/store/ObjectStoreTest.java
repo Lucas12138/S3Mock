@@ -44,6 +44,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -450,10 +451,12 @@ class ObjectStoreTest {
   }
 
   private BucketMetadata metadataFrom(String bucketName) {
-    BucketMetadata metadata = new BucketMetadata();
-    metadata.setName(bucketName);
-    metadata.setPath(Paths.get(rootFolder.toString(), bucketName));
-    return metadata;
+    return new BucketMetadata(
+        bucketName,
+        new Date().toString(),
+        null,
+        Paths.get(rootFolder.toString(), bucketName)
+    );
   }
 
   private UUID managedId() {

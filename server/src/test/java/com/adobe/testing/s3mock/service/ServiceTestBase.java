@@ -120,10 +120,12 @@ abstract class ServiceTestBase {
   }
 
   BucketMetadata metadataFrom(String bucketName) {
-    BucketMetadata metadata = new BucketMetadata();
-    metadata.setName(bucketName);
-    metadata.setPath(Paths.get(FileUtils.getTempDirectoryPath(), bucketName));
-    return metadata;
+    return new BucketMetadata(
+        bucketName,
+        new Date().toString(),
+        null,
+        Paths.get(FileUtils.getTempDirectoryPath(), bucketName)
+    );
   }
 
   List<Part> givenParts(int count, long size) {
