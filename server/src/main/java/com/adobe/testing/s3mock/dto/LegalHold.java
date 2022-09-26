@@ -24,24 +24,9 @@ import com.fasterxml.jackson.annotation.JsonRootName;
  * <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html">API Reference</a>.
  */
 @JsonRootName("LegalHold")
-public class LegalHold {
+public record LegalHold(
+    @JsonProperty("Status")
+    Status status
+) {
 
-  @JsonProperty("Status")
-  private Status status;
-
-  public LegalHold() {
-
-  }
-
-  public LegalHold(Status status) {
-    this.status = status;
-  }
-
-  public Status getStatus() {
-    return status;
-  }
-
-  public void setStatus(Status status) {
-    this.status = status;
-  }
 }

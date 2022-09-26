@@ -148,7 +148,7 @@ public class MultipartController {
       @RequestParam String uploadId) {
     bucketService.verifyBucketExists(bucketName);
 
-    multipartService.abortMultipartUpload(bucketName, key.getKey(), uploadId);
+    multipartService.abortMultipartUpload(bucketName, key.key(), uploadId);
     return ResponseEntity.noContent().build();
   }
 
@@ -178,7 +178,7 @@ public class MultipartController {
     multipartService.verifyMultipartUploadExists(uploadId);
 
     ListPartsResult result =
-        multipartService.getMultipartUploadParts(bucketName, key.getKey(), uploadId);
+        multipartService.getMultipartUploadParts(bucketName, key.key(), uploadId);
     return ResponseEntity.ok(result);
   }
 
@@ -222,7 +222,7 @@ public class MultipartController {
     multipartService.verifyPartNumberLimits(partNumber);
 
     String etag = multipartService.putPart(bucketName,
-        key.getKey(),
+        key.key(),
         uploadId,
         partNumber,
         inputStream,
@@ -285,7 +285,7 @@ public class MultipartController {
         copyRange,
         partNumber,
         bucketName,
-        key.getKey(),
+        key.key(),
         uploadId
     );
 
@@ -325,7 +325,7 @@ public class MultipartController {
 
     String uploadId = UUID.randomUUID().toString();
     InitiateMultipartUploadResult result =
-        multipartService.prepareMultipartUpload(bucketName, key.getKey(),
+        multipartService.prepareMultipartUpload(bucketName, key.key(),
             contentType, contentEncoding, uploadId,
             DEFAULT_OWNER, DEFAULT_OWNER, userMetadata);
 
@@ -361,11 +361,11 @@ public class MultipartController {
       @RequestBody CompleteMultipartUpload upload,
       HttpServletRequest request) {
     bucketService.verifyBucketExists(bucketName);
-    multipartService.verifyMultipartParts(bucketName, key.getKey(), uploadId, upload.getParts());
+    multipartService.verifyMultipartParts(bucketName, key.key(), uploadId, upload.parts());
     CompleteMultipartUploadResult result = multipartService.completeMultipartUpload(bucketName,
-        key.getKey(),
+        key.key(),
         uploadId,
-        upload.getParts(),
+        upload.parts(),
         encryption,
         kmsKeyId,
         request.getRequestURL().toString());

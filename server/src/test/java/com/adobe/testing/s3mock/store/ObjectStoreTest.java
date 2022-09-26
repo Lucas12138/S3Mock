@@ -66,15 +66,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @Execution(SAME_THREAD)
 class ObjectStoreTest {
   private static final String SIGNED_CONTENT =
-      "24;chunk-signature=11707b33deb094881a16c70e9cbd5d79053a0bb235c25674e3cf0fed601683b5\r\n"
-          + "## sample test file ##\n"
-          + "\n"
-          + "demo=content\n"
-          + "0;chunk-signature=2206490f19c068b46367173d1e155b597fd367037fa3f924290b41c1e83c1c08";
+      """
+          24;chunk-signature=11707b33deb094881a16c70e9cbd5d79053a0bb235c25674e3cf0fed601683b5\r
+          ## sample test file ##
+
+          demo=content
+          0;chunk-signature=2206490f19c068b46367173d1e155b597fd367037fa3f924290b41c1e83c1c08
+          """;
   private static final String UNSIGNED_CONTENT =
-      "## sample test file ##\n"
-          + "\n"
-          + "demo=content";
+      """
+          ## sample test file ##
+
+          demo=content""";
   private static final String TEST_BUCKET_NAME = "test-bucket";
   private static final String TEST_FILE_PATH = "src/test/resources/sampleFile.txt";
   private static final String NO_ENC = null;
@@ -267,9 +270,9 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getTags().get(0).getKey()).as("Tag should be present")
+    assertThat(returnedObject.getTags().get(0).key()).as("Tag should be present")
         .isEqualTo("foo");
-    assertThat(returnedObject.getTags().get(0).getValue()).as("Tag value should be bar")
+    assertThat(returnedObject.getTags().get(0).value()).as("Tag value should be bar")
         .isEqualTo("bar");
   }
 
@@ -291,9 +294,9 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getTags().get(0).getKey()).as("Tag should be present")
+    assertThat(returnedObject.getTags().get(0).key()).as("Tag should be present")
         .isEqualTo("foo");
-    assertThat(returnedObject.getTags().get(0).getValue()).as("Tag value should be bar")
+    assertThat(returnedObject.getTags().get(0).value()).as("Tag value should be bar")
         .isEqualTo("bar");
   }
 
@@ -317,8 +320,8 @@ class ObjectStoreTest {
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
     assertThat(returnedObject.getRetention()).isNotNull();
-    assertThat(returnedObject.getRetention().getMode()).isEqualTo(Mode.COMPLIANCE);
-    assertThat(returnedObject.getRetention().getRetainUntilDate()).isEqualTo(now);
+    assertThat(returnedObject.getRetention().mode()).isEqualTo(Mode.COMPLIANCE);
+    assertThat(returnedObject.getRetention().retainUntilDate()).isEqualTo(now);
   }
 
   @Test
@@ -339,7 +342,7 @@ class ObjectStoreTest {
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
     assertThat(returnedObject.getLegalHold()).isNotNull();
-    assertThat(returnedObject.getLegalHold().getStatus()).isEqualTo(Status.ON);
+    assertThat(returnedObject.getLegalHold().status()).isEqualTo(Status.ON);
   }
 
   @Test

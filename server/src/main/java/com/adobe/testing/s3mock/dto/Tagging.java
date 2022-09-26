@@ -42,11 +42,7 @@ public class Tagging {
     this.tagSet = tagSet;
   }
 
-  public void setTagSet(final List<Tag> tagSet) {
-    this.tagSet = tagSet;
-  }
-
-  public List<Tag> getTagSet() {
+  public List<Tag> tagSet() {
     return tagSet;
   }
 }

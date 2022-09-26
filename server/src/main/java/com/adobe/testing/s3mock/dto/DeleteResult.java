@@ -27,26 +27,17 @@ import java.util.List;
  * <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html">API Reference</a>
  */
 @JsonRootName("DeleteResult")
-public class DeleteResult {
-
-  @JsonProperty("Deleted")
-  @JacksonXmlElementWrapper(useWrapping = false)
-  private final List<DeletedS3Object> deletedObjects = new ArrayList<>();
-
-  @JsonProperty("Error")
-  @JacksonXmlElementWrapper(useWrapping = false)
-  private final List<Error> errors = new ArrayList<>();
-
-  public List<DeletedS3Object> getDeletedObjects() {
-    return deletedObjects;
-  }
+public record DeleteResult(
+    @JsonProperty("Deleted")
+    @JacksonXmlElementWrapper(useWrapping = false)
+    List<DeletedS3Object> deletedObjects,
+    @JsonProperty("Error")
+    @JacksonXmlElementWrapper(useWrapping = false)
+    List<Error> errors
+) {
 
   public void addDeletedObject(DeletedS3Object deletedObject) {
     deletedObjects.add(deletedObject);
-  }
-
-  public List<Error> getErrors() {
-    return errors;
   }
 
   public void addError(Error error) {

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -148,25 +149,25 @@ public class ObjectService {
   }
 
   public DeleteResult deleteObjects(String bucketName, Delete delete) {
-    DeleteResult response = new DeleteResult();
-    for (S3ObjectIdentifier object : delete.getObjectsToDelete()) {
+    DeleteResult response = new DeleteResult(new ArrayList<>(), new ArrayList<>());
+    for (S3ObjectIdentifier object : delete.objectsToDelete()) {
       try {
-        if (deleteObject(bucketName, object.getKey())) {
+        if (deleteObject(bucketName, object.key())) {
           response.addDeletedObject(DeletedS3Object.from(object));
         } else {
           //TODO: There may be different error reasons than a non-existent key.
           response.addError(
               new com.adobe.testing.s3mock.dto.Error("NoSuchKey",
-                  object.getKey(),
+                  object.key(),
                   "The specified key does not exist.",
-                  object.getVersionId()));
+                  object.versionId()));
         }
       } catch (IllegalStateException e) {
         response.addError(
             new com.adobe.testing.s3mock.dto.Error("InternalError",
-                object.getKey(),
+                object.key(),
                 "We encountered an internal error. Please try again.",
-                object.getVersionId()));
+                object.versionId()));
         LOG.error("Object could not be deleted!", e);
       }
     }
@@ -200,7 +201,7 @@ public class ObjectService {
    *
    * @param bucketName Bucket the object is stored in.
    * @param key object key to store tags for.
-   * @param tags List of tag objects.
+   * @param tags List of tagSet objects.
    */
   public void setObjectTags(String bucketName, String key, List<Tag> tags) {
     BucketMetadata bucketMetadata = bucketStore.getBucketMetadata(bucketName);
@@ -260,7 +261,7 @@ public class ObjectService {
   }
 
   public void verifyRetention(Retention retention) {
-    Instant retainUntilDate = retention.getRetainUntilDate();
+    Instant retainUntilDate = retention.retainUntilDate();
     if (Instant.now().isAfter(retainUntilDate)) {
       throw INVALID_REQUEST_RETAINDATE;
     }

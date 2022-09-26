@@ -29,11 +29,14 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static software.amazon.awssdk.utils.http.SdkHttpUtils.urlEncodeIgnoreSlashes;
 
 import com.adobe.testing.s3mock.dto.Bucket;
+import com.adobe.testing.s3mock.dto.Buckets;
 import com.adobe.testing.s3mock.dto.ListAllMyBucketsResult;
 import com.adobe.testing.s3mock.dto.ListBucketResult;
 import com.adobe.testing.s3mock.dto.ListBucketResultV2;
 import com.adobe.testing.s3mock.dto.ObjectLockConfiguration;
+import com.adobe.testing.s3mock.dto.Prefix;
 import com.adobe.testing.s3mock.dto.S3Object;
+import com.adobe.testing.s3mock.dto.S3ObjectIdentifier;
 import com.adobe.testing.s3mock.store.BucketMetadata;
 import com.adobe.testing.s3mock.store.BucketStore;
 import com.adobe.testing.s3mock.store.ObjectStore;
@@ -72,8 +75,8 @@ public class BucketService {
         .stream()
         .filter(Objects::nonNull)
         .map(Bucket::from)
-        .collect(Collectors.toList());
-    return new ListAllMyBucketsResult(DEFAULT_OWNER, buckets);
+        .toList();
+    return new ListAllMyBucketsResult(DEFAULT_OWNER, new Buckets(buckets));
   }
 
   /**
@@ -134,7 +137,7 @@ public class BucketService {
         .filter(Objects::nonNull)
         .map(S3Object::from)
         // List Objects results are expected to be sorted by key
-        .sorted(Comparator.comparing(S3Object::getKey))
+        .sorted(Comparator.comparing(S3Object::key))
         .collect(Collectors.toList());
   }
 
@@ -172,7 +175,7 @@ public class BucketService {
       nextContinuationToken = UUID.randomUUID().toString();
       contents = contents.subList(0, maxKeys);
       listObjectsPagingStateCache.put(nextContinuationToken,
-          contents.get(maxKeys - 1).getKey());
+          contents.get(maxKeys - 1).key());
     }
 
     String returnPrefix = prefix;
@@ -180,17 +183,19 @@ public class BucketService {
     List<String> returnCommonPrefixes = commonPrefixes;
 
     if (Objects.equals("url", encodingType)) {
-      contents = apply(contents, (object) -> {
-        object.setKey(urlEncodeIgnoreSlashes(object.getKey()));
-        return object;
-      });
+      contents = apply(contents, (object) -> new S3Object(urlEncodeIgnoreSlashes(object.key()),
+          object.lastModified(),
+          object.etag(),
+          object.size(),
+          object.storageClass(),
+          object.owner()));
       returnPrefix = urlEncodeIgnoreSlashes(prefix);
       returnStartAfter = urlEncodeIgnoreSlashes(startAfter);
       returnCommonPrefixes = apply(commonPrefixes, SdkHttpUtils::urlEncodeIgnoreSlashes);
     }
 
     return new ListBucketResultV2(bucketName, returnPrefix, maxKeys,
-        isTruncated, contents, returnCommonPrefixes,
+        isTruncated, contents, returnCommonPrefixes.stream().map(Prefix::new).toList(),
         continuationToken, String.valueOf(contents.size()),
         nextContinuationToken, returnStartAfter, encodingType);
   }
@@ -214,7 +219,7 @@ public class BucketService {
       contents = contents.subList(0, maxKeys);
       isTruncated = true;
       if (maxKeys > 0) {
-        nextMarker = contents.get(maxKeys - 1).getKey();
+        nextMarker = contents.get(maxKeys - 1).key();
       }
     }
 
@@ -222,16 +227,19 @@ public class BucketService {
     List<String> returnCommonPrefixes = commonPrefixes;
 
     if (Objects.equals("url", encodingType)) {
-      contents = apply(contents, (object) -> {
-        object.setKey(urlEncodeIgnoreSlashes(object.getKey()));
-        return object;
-      });
+      contents = apply(contents, (object) -> new S3Object(urlEncodeIgnoreSlashes(object.key()),
+          object.lastModified(),
+          object.etag(),
+          object.size(),
+          object.storageClass(),
+          object.owner()));
       returnPrefix = urlEncodeIgnoreSlashes(prefix);
       returnCommonPrefixes = apply(commonPrefixes, SdkHttpUtils::urlEncodeIgnoreSlashes);
     }
 
     return new ListBucketResult(bucketName, returnPrefix, marker, maxKeys, isTruncated,
-        encodingType, nextMarker, contents, returnCommonPrefixes);
+        encodingType, nextMarker, contents,
+        returnCommonPrefixes.stream().map(Prefix::new).toList());
   }
 
   public void verifyBucketExists(String bucketName) {
@@ -299,7 +307,7 @@ public class BucketService {
     String normalizedQueryPrefix = queryPrefix == null ? "" : queryPrefix;
 
     for (S3Object c : s3Objects) {
-      String key = c.getKey();
+      String key = c.key();
       if (key.startsWith(normalizedQueryPrefix)) {
         int delimiterIndex = key.indexOf(delimiter, normalizedQueryPrefix.length());
         if (delimiterIndex > 0) {
@@ -325,7 +333,7 @@ public class BucketService {
     if (isNotEmpty(startAfter)) {
       return s3Objects
           .stream()
-          .filter(p -> p.getKey().compareTo(startAfter) > 0)
+          .filter(p -> p.key().compareTo(startAfter) > 0)
           .collect(Collectors.toList());
     } else {
       return s3Objects;
@@ -339,7 +347,7 @@ public class BucketService {
           .stream()
           .filter(c -> commonPrefixes
               .stream()
-              .noneMatch(p -> c.getKey().startsWith(p))
+              .noneMatch(p -> c.key().startsWith(p))
           )
           .collect(Collectors.toList());
     } else {
