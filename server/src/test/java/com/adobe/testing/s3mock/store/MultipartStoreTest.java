@@ -18,7 +18,6 @@ package com.adobe.testing.s3mock.store;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.rangeClosed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
@@ -198,8 +197,8 @@ class MultipartStoreTest {
 
     final S3ObjectMetadata s3ObjectMetadata =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
-    assertThat(s3ObjectMetadata.getSize()).as("Size doesn't match.").isEqualTo("10");
-    assertThat(s3ObjectMetadata.getContentType()).isEqualTo(APPLICATION_OCTET_STREAM.toString());
+    assertThat(s3ObjectMetadata.size()).as("Size doesn't match.").isEqualTo("10");
+    assertThat(s3ObjectMetadata.contentType()).isEqualTo(APPLICATION_OCTET_STREAM.toString());
   }
 
   private List<CompletedPart> getParts(int n) {
@@ -458,10 +457,10 @@ class MultipartStoreTest {
         getParts(10), NO_ENC, NO_ENC_KEY);
     final List<String> s = FileUtils
         .readLines(objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id)
-                .getDataPath().toFile(), "UTF8");
+                .dataPath().toFile(), "UTF8");
 
     assertThat(s).contains(rangeClosed(1, 10).mapToObj(Integer::toString)
-        .collect(toList()).toArray(new String[] {}));
+        .toList().toArray(new String[] {}));
   }
 
   private BucketMetadata metadataFrom(String bucketName) {

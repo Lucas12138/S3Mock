@@ -313,7 +313,7 @@ public class ObjectService {
   public void verifyObjectMatching(List<String> match, List<String> noneMatch,
       S3ObjectMetadata s3ObjectMetadata) {
     if (s3ObjectMetadata != null) {
-      String etag = s3ObjectMetadata.getEtag();
+      String etag = s3ObjectMetadata.etag();
       if (match != null) {
         if (match.contains(WILDCARD_ETAG)) {
           //request cares only that the object exists
@@ -348,8 +348,8 @@ public class ObjectService {
 
   public S3ObjectMetadata verifyObjectLockConfiguration(String bucketName, String key) {
     S3ObjectMetadata s3ObjectMetadata = verifyObjectExists(bucketName, key);
-    boolean noLegalHold = s3ObjectMetadata.getLegalHold() == null;
-    boolean noRetention = s3ObjectMetadata.getRetention() == null;
+    boolean noLegalHold = s3ObjectMetadata.legalHold() == null;
+    boolean noRetention = s3ObjectMetadata.retention() == null;
     if (noLegalHold && noRetention) {
       throw NOT_FOUND_OBJECT_LOCK;
     }

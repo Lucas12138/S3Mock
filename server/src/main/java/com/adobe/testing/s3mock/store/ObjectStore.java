@@ -112,35 +112,36 @@ public class ObjectStore {
       String etag,
       List<Tag> tags,
       Owner owner) {
-    Instant now = Instant.now();
-    boolean encrypted = isNotBlank(encryption) && isNotBlank(kmsKeyId);
-    S3ObjectMetadata s3ObjectMetadata = new S3ObjectMetadata();
-    s3ObjectMetadata.setId(id);
-    s3ObjectMetadata.setKey(key);
-    s3ObjectMetadata.setContentType(contentType);
-    s3ObjectMetadata.setContentEncoding(contentEncoding);
-    s3ObjectMetadata.setUserMetadata(userMetadata);
-    s3ObjectMetadata.setTags(tags);
-    s3ObjectMetadata.setEncrypted(encrypted);
-    s3ObjectMetadata.setKmsEncryption(encryption);
-    s3ObjectMetadata.setKmsKeyId(kmsKeyId);
-    s3ObjectMetadata.setModificationDate(s3ObjectDateFormat.format(now));
-    s3ObjectMetadata.setLastModified(now.toEpochMilli());
-    s3ObjectMetadata.setOwner(owner);
     lockStore.putIfAbsent(id, new Object());
     synchronized (lockStore.get(id)) {
       createObjectRootFolder(bucket, id);
       File dataFile =
           inputStreamToFile(wrapStream(dataStream, useV4ChunkedWithSigningFormat),
               getDataFilePath(bucket, id));
-      s3ObjectMetadata.setDataPath(dataFile.toPath());
-      s3ObjectMetadata.setSize(Long.toString(dataFile.length()));
-      s3ObjectMetadata.setEtag(etag != null ? etag : hexDigest(kmsKeyId, dataFile));
-
+      Instant now = Instant.now();
+      boolean encrypted = isNotBlank(encryption) && isNotBlank(kmsKeyId);
+      S3ObjectMetadata s3ObjectMetadata = new S3ObjectMetadata(
+          id,
+          key,
+          Long.toString(dataFile.length()),
+          s3ObjectDateFormat.format(now),
+          etag != null ? etag : hexDigest(kmsKeyId, dataFile),
+          contentType,
+          contentEncoding,
+          encryption,
+          encrypted,
+          now.toEpochMilli(),
+          dataFile.toPath(),
+          kmsKeyId,
+          userMetadata,
+          tags,
+          null,
+          null,
+          owner
+      );
       writeMetafile(bucket, s3ObjectMetadata);
+      return s3ObjectMetadata;
     }
-
-    return s3ObjectMetadata;
   }
 
   private AccessControlPolicy privateCannedAcl(Owner owner) {
@@ -158,8 +159,25 @@ public class ObjectStore {
   public void storeObjectTags(BucketMetadata bucket, UUID id, List<Tag> tags) {
     synchronized (lockStore.get(id)) {
       S3ObjectMetadata s3ObjectMetadata = getS3ObjectMetadata(bucket, id);
-      s3ObjectMetadata.setTags(tags);
-      writeMetafile(bucket, s3ObjectMetadata);
+      writeMetafile(bucket, new S3ObjectMetadata(
+          s3ObjectMetadata.id(),
+          s3ObjectMetadata.key(),
+          s3ObjectMetadata.size(),
+          s3ObjectMetadata.modificationDate(),
+          s3ObjectMetadata.etag(),
+          s3ObjectMetadata.contentType(),
+          s3ObjectMetadata.contentEncoding(),
+          s3ObjectMetadata.kmsEncryption(),
+          s3ObjectMetadata.isEncrypted(),
+          s3ObjectMetadata.lastModified(),
+          s3ObjectMetadata.dataPath(),
+          s3ObjectMetadata.kmsKeyId(),
+          s3ObjectMetadata.userMetadata(),
+          tags,
+          s3ObjectMetadata.legalHold(),
+          s3ObjectMetadata.retention(),
+          s3ObjectMetadata.owner()
+      ));
     }
   }
 
@@ -173,8 +191,25 @@ public class ObjectStore {
   public void storeLegalHold(BucketMetadata bucket, UUID id, LegalHold legalHold) {
     synchronized (lockStore.get(id)) {
       S3ObjectMetadata s3ObjectMetadata = getS3ObjectMetadata(bucket, id);
-      s3ObjectMetadata.setLegalHold(legalHold);
-      writeMetafile(bucket, s3ObjectMetadata);
+      writeMetafile(bucket, new S3ObjectMetadata(
+          s3ObjectMetadata.id(),
+          s3ObjectMetadata.key(),
+          s3ObjectMetadata.size(),
+          s3ObjectMetadata.modificationDate(),
+          s3ObjectMetadata.etag(),
+          s3ObjectMetadata.contentType(),
+          s3ObjectMetadata.contentEncoding(),
+          s3ObjectMetadata.kmsEncryption(),
+          s3ObjectMetadata.isEncrypted(),
+          s3ObjectMetadata.lastModified(),
+          s3ObjectMetadata.dataPath(),
+          s3ObjectMetadata.kmsKeyId(),
+          s3ObjectMetadata.userMetadata(),
+          s3ObjectMetadata.tags(),
+          legalHold,
+          s3ObjectMetadata.retention(),
+          s3ObjectMetadata.owner()
+      ));
     }
   }
 
@@ -193,7 +228,7 @@ public class ObjectStore {
     AccessControlPolicy policy = readAclFile(bucket, id);
     if (policy == null) {
       S3ObjectMetadata s3ObjectMetadata = getS3ObjectMetadata(bucket, id);
-      return privateCannedAcl(s3ObjectMetadata.getOwner());
+      return privateCannedAcl(s3ObjectMetadata.owner());
     }
     return policy;
   }
@@ -208,8 +243,25 @@ public class ObjectStore {
   public void storeRetention(BucketMetadata bucket, UUID id, Retention retention) {
     synchronized (lockStore.get(id)) {
       S3ObjectMetadata s3ObjectMetadata = getS3ObjectMetadata(bucket, id);
-      s3ObjectMetadata.setRetention(retention);
-      writeMetafile(bucket, s3ObjectMetadata);
+      writeMetafile(bucket, new S3ObjectMetadata(
+          s3ObjectMetadata.id(),
+          s3ObjectMetadata.key(),
+          s3ObjectMetadata.size(),
+          s3ObjectMetadata.modificationDate(),
+          s3ObjectMetadata.etag(),
+          s3ObjectMetadata.contentType(),
+          s3ObjectMetadata.contentEncoding(),
+          s3ObjectMetadata.kmsEncryption(),
+          s3ObjectMetadata.isEncrypted(),
+          s3ObjectMetadata.lastModified(),
+          s3ObjectMetadata.dataPath(),
+          s3ObjectMetadata.kmsKeyId(),
+          s3ObjectMetadata.userMetadata(),
+          s3ObjectMetadata.tags(),
+          s3ObjectMetadata.legalHold(),
+          retention,
+          s3ObjectMetadata.owner()
+      ));
     }
   }
 
@@ -266,28 +318,28 @@ public class ObjectStore {
     }
     S3ObjectMetadata copiedObject;
     synchronized (lockStore.get(sourceId)) {
-      try (InputStream inputStream = Files.newInputStream(sourceObject.getDataPath())) {
+      try (InputStream inputStream = Files.newInputStream(sourceObject.dataPath())) {
         copiedObject = storeS3ObjectMetadata(destinationBucket,
             destinationId,
             destinationKey,
-            sourceObject.getContentType(),
-            sourceObject.getContentEncoding(),
+            sourceObject.contentType(),
+            sourceObject.contentEncoding(),
             inputStream,
             false,
             userMetadata == null || userMetadata.isEmpty()
-                ? sourceObject.getUserMetadata() : userMetadata,
+                ? sourceObject.userMetadata() : userMetadata,
             encryption,
             kmsKeyId,
             null,
-            sourceObject.getTags(),
-            sourceObject.getOwner());
+            sourceObject.tags(),
+            sourceObject.owner());
       } catch (IOException e) {
         LOG.error("Can't write file to disk!", e);
         throw new IllegalStateException("Can't write file to disk!", e);
       }
     }
 
-    return new CopyObjectResult(copiedObject.getModificationDate(), copiedObject.getEtag());
+    return new CopyObjectResult(copiedObject.modificationDate(), copiedObject.etag());
   }
 
   /**
@@ -303,11 +355,27 @@ public class ObjectStore {
       return null;
     }
 
-    sourceObject.setLastModified(Instant.now().toEpochMilli());
-    sourceObject.setUserMetadata(userMetadata == null || userMetadata.isEmpty()
-        ? sourceObject.getUserMetadata() : userMetadata);
-    writeMetafile(sourceBucket, sourceObject);
-    return new CopyObjectResult(sourceObject.getModificationDate(), sourceObject.getEtag());
+    writeMetafile(sourceBucket, new S3ObjectMetadata(
+        sourceObject.id(),
+        sourceObject.key(),
+        sourceObject.size(),
+        sourceObject.modificationDate(),
+        sourceObject.etag(),
+        sourceObject.contentType(),
+        sourceObject.contentEncoding(),
+        sourceObject.kmsEncryption(),
+        sourceObject.isEncrypted(),
+        Instant.now().toEpochMilli(),
+        sourceObject.dataPath(),
+        sourceObject.kmsKeyId(),
+        userMetadata == null || userMetadata.isEmpty()
+            ? sourceObject.userMetadata() : userMetadata,
+        sourceObject.tags(),
+        sourceObject.legalHold(),
+        sourceObject.retention(),
+        sourceObject.owner()
+    ));
+    return new CopyObjectResult(sourceObject.modificationDate(), sourceObject.etag());
   }
 
   /**
@@ -412,8 +480,8 @@ public class ObjectStore {
 
   private boolean writeMetafile(BucketMetadata bucket, S3ObjectMetadata s3ObjectMetadata) {
     try {
-      synchronized (lockStore.get(s3ObjectMetadata.getId())) {
-        File metaFile = getMetaFilePath(bucket, s3ObjectMetadata.getId()).toFile();
+      synchronized (lockStore.get(s3ObjectMetadata.id())) {
+        File metaFile = getMetaFilePath(bucket, s3ObjectMetadata.id()).toFile();
         if (!retainFilesOnExit) {
           metaFile.deleteOnExit();
         }

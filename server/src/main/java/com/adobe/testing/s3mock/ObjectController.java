@@ -169,10 +169,10 @@ public class ObjectController {
       return ResponseEntity.ok()
           .headers(headers -> headers.setAll(createUserMetadataHeaders(s3ObjectMetadata)))
           .headers(headers -> headers.setAll(createEncryptionHeaders(s3ObjectMetadata)))
-          .contentType(parseMediaType(s3ObjectMetadata.getContentType()))
-          .eTag(s3ObjectMetadata.getEtag())
-          .contentLength(Long.parseLong(s3ObjectMetadata.getSize()))
-          .lastModified(s3ObjectMetadata.getLastModified())
+          .contentType(parseMediaType(s3ObjectMetadata.contentType()))
+          .eTag(s3ObjectMetadata.etag())
+          .contentLength(Long.parseLong(s3ObjectMetadata.size()))
+          .lastModified(s3ObjectMetadata.lastModified())
           .build();
     } else {
       return ResponseEntity.status(NOT_FOUND).build();
@@ -243,16 +243,16 @@ public class ObjectController {
 
     return ResponseEntity
         .ok()
-        .eTag(s3ObjectMetadata.getEtag())
-        .header(HttpHeaders.CONTENT_ENCODING, s3ObjectMetadata.getContentEncoding())
+        .eTag(s3ObjectMetadata.etag())
+        .header(HttpHeaders.CONTENT_ENCODING, s3ObjectMetadata.contentEncoding())
         .header(HttpHeaders.ACCEPT_RANGES, RANGES_BYTES)
         .headers(headers -> headers.setAll(createUserMetadataHeaders(s3ObjectMetadata)))
         .headers(headers -> headers.setAll(createEncryptionHeaders(s3ObjectMetadata)))
-        .lastModified(s3ObjectMetadata.getLastModified())
-        .contentLength(s3ObjectMetadata.getDataPath().toFile().length())
-        .contentType(parseMediaType(s3ObjectMetadata.getContentType()))
+        .lastModified(s3ObjectMetadata.lastModified())
+        .contentLength(s3ObjectMetadata.dataPath().toFile().length())
+        .contentType(parseMediaType(s3ObjectMetadata.contentType()))
         .headers(headers -> headers.setAll(createOverrideHeaders(queryParams)))
-        .body(outputStream -> Files.copy(s3ObjectMetadata.getDataPath(), outputStream));
+        .body(outputStream -> Files.copy(s3ObjectMetadata.dataPath(), outputStream));
   }
 
   /**
@@ -339,13 +339,13 @@ public class ObjectController {
 
     S3ObjectMetadata s3ObjectMetadata = objectService.verifyObjectExists(bucketName, key.key());
 
-    List<Tag> tagList = new ArrayList<>(s3ObjectMetadata.getTags());
+    List<Tag> tagList = new ArrayList<>(s3ObjectMetadata.tags());
     Tagging result = new Tagging(tagList);
 
     return ResponseEntity
         .ok()
-        .eTag(s3ObjectMetadata.getEtag())
-        .lastModified(s3ObjectMetadata.getLastModified())
+        .eTag(s3ObjectMetadata.etag())
+        .lastModified(s3ObjectMetadata.lastModified())
         .body(result);
   }
 
@@ -373,8 +373,8 @@ public class ObjectController {
     objectService.setObjectTags(bucketName, key.key(), body.tagSet());
     return ResponseEntity
         .ok()
-        .eTag(s3ObjectMetadata.getEtag())
-        .lastModified(s3ObjectMetadata.getLastModified())
+        .eTag(s3ObjectMetadata.etag())
+        .lastModified(s3ObjectMetadata.lastModified())
         .build();
   }
 
@@ -402,7 +402,7 @@ public class ObjectController {
 
     return ResponseEntity
         .ok()
-        .body(s3ObjectMetadata.getLegalHold());
+        .body(s3ObjectMetadata.legalHold());
   }
 
   /**
@@ -457,7 +457,7 @@ public class ObjectController {
 
     return ResponseEntity
         .ok()
-        .body(s3ObjectMetadata.getRetention());
+        .body(s3ObjectMetadata.retention());
   }
 
   /**
@@ -548,8 +548,8 @@ public class ObjectController {
 
     return ResponseEntity
         .ok()
-        .eTag(s3ObjectMetadata.getEtag())
-        .lastModified(s3ObjectMetadata.getLastModified())
+        .eTag(s3ObjectMetadata.etag())
+        .lastModified(s3ObjectMetadata.lastModified())
         .header(X_AMZ_SERVER_SIDE_ENCRYPTION_AWS_KMS_KEY_ID, kmsKeyId)
         .build();
   }
@@ -638,7 +638,7 @@ public class ObjectController {
    */
   private ResponseEntity<StreamingResponseBody> getObjectWithRange(Range range,
       S3ObjectMetadata s3ObjectMetadata) {
-    long fileSize = s3ObjectMetadata.getDataPath().toFile().length();
+    long fileSize = s3ObjectMetadata.dataPath().toFile().length();
     long bytesToRead = Math.min(fileSize - 1, range.getEnd()) - range.getStart() + 1;
 
     if (bytesToRead < 0 || fileSize < range.getStart()) {
@@ -652,13 +652,13 @@ public class ObjectController {
         .header(HttpHeaders.ACCEPT_RANGES, RANGES_BYTES)
         .header(HttpHeaders.CONTENT_RANGE,
             String.format("bytes %s-%s/%s",
-                range.getStart(), bytesToRead + range.getStart() - 1, s3ObjectMetadata.getSize()))
-        .eTag(s3ObjectMetadata.getEtag())
-        .contentType(parseMediaType(s3ObjectMetadata.getContentType()))
-        .lastModified(s3ObjectMetadata.getLastModified())
+                range.getStart(), bytesToRead + range.getStart() - 1, s3ObjectMetadata.size()))
+        .eTag(s3ObjectMetadata.etag())
+        .contentType(parseMediaType(s3ObjectMetadata.contentType()))
+        .lastModified(s3ObjectMetadata.lastModified())
         .contentLength(bytesToRead)
         .body(outputStream -> {
-          try (InputStream fis = Files.newInputStream(s3ObjectMetadata.getDataPath())) {
+          try (InputStream fis = Files.newInputStream(s3ObjectMetadata.dataPath())) {
             long skip = fis.skip(range.getStart());
             if (skip == range.getStart()) {
               IOUtils.copy(new BoundedInputStream(fis, bytesToRead), outputStream);

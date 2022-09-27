@@ -58,10 +58,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -184,7 +186,8 @@ class ObjectControllerTest {
     String encryption = "aws:kms";
     String encryptionKey = "key-ref";
     String key = "name";
-    S3ObjectMetadata expectedS3ObjectMetadata = s3ObjectEncrypted(key, encryption, encryptionKey);
+    S3ObjectMetadata expectedS3ObjectMetadata = s3ObjectEncrypted(key, "digest",
+        encryption, encryptionKey);
 
     givenBucket();
     when(objectService.verifyObjectExists(eq(TEST_BUCKET_NAME), eq(key)))
@@ -203,7 +206,8 @@ class ObjectControllerTest {
     String encryption = "aws:kms";
     String encryptionKey = "key-ref";
     String key = "name";
-    S3ObjectMetadata expectedS3ObjectMetadata = s3ObjectEncrypted(key, encryption, encryptionKey);
+    S3ObjectMetadata expectedS3ObjectMetadata = s3ObjectEncrypted(key, "digest",
+        encryption, encryptionKey);
 
     givenBucket();
     when(objectService.verifyObjectExists(eq("test-bucket"), eq(key)))
@@ -285,8 +289,8 @@ class ObjectControllerTest {
         new Tag("key1", "value1"), new Tag("key2", "value2"))
     );
     givenBucket();
-    S3ObjectMetadata s3ObjectMetadata = s3ObjectMetadata(key, UUID.randomUUID().toString());
-    s3ObjectMetadata.setTags(tagging.tagSet());
+    S3ObjectMetadata s3ObjectMetadata = s3ObjectMetadata(key, UUID.randomUUID().toString(),
+        null, null, null, tagging.tagSet());
     when(objectService.verifyObjectExists(eq("test-bucket"), eq(key)))
         .thenReturn(s3ObjectMetadata);
 
@@ -327,8 +331,8 @@ class ObjectControllerTest {
     Instant instant = Instant.ofEpochMilli(1514477008120L);
     Retention retention = new Retention(Mode.COMPLIANCE, instant);
     givenBucket();
-    S3ObjectMetadata s3ObjectMetadata = s3ObjectMetadata(key, UUID.randomUUID().toString());
-    s3ObjectMetadata.setRetention(retention);
+    S3ObjectMetadata s3ObjectMetadata = s3ObjectMetadata(key, UUID.randomUUID().toString(),
+        null, null, retention, null);
     when(objectService.verifyObjectLockConfiguration(eq("test-bucket"), eq(key)))
         .thenReturn(s3ObjectMetadata);
 
@@ -364,25 +368,39 @@ class ObjectControllerTest {
     when(bucketService.doesBucketExist(TEST_BUCKET_NAME)).thenReturn(true);
   }
 
-  private S3ObjectMetadata s3ObjectMetadata(String id, String digest) {
-    S3ObjectMetadata s3ObjectMetadata = new S3ObjectMetadata();
-    s3ObjectMetadata.setKey(id);
-    s3ObjectMetadata.setModificationDate("1234");
-    s3ObjectMetadata.setEtag(digest);
-    s3ObjectMetadata.setSize("size");
-    return s3ObjectMetadata;
+  private S3ObjectMetadata s3ObjectEncrypted(
+      String id, String digest, String encryption, String encryptionKey) {
+    return s3ObjectMetadata(
+        id, digest, encryption, encryptionKey, null, null
+    );
   }
 
-  private S3ObjectMetadata s3ObjectEncrypted(
-      String id, String encryption, String encryptionKey) {
-    S3ObjectMetadata s3ObjectMetadata = s3ObjectMetadata(id, "digest");
-    s3ObjectMetadata.setEncrypted(true);
-    s3ObjectMetadata.setKmsEncryption(encryption);
-    s3ObjectMetadata.setKmsKeyId(encryptionKey);
-    s3ObjectMetadata.setSize("12345");
-    final File sourceFile = new File("src/test/resources/sampleFile.txt");
-    s3ObjectMetadata.setDataPath(sourceFile.toPath());
-    return s3ObjectMetadata;
+  private S3ObjectMetadata s3ObjectMetadata(String id, String digest) {
+    return s3ObjectMetadata(id, digest, null, null, null, null);
+  }
+
+  private S3ObjectMetadata s3ObjectMetadata(String id, String digest,
+      String encryption, String encryptionKey,
+      Retention retention, List<Tag> tags) {
+    return new S3ObjectMetadata(
+        UUID.randomUUID(),
+        id,
+        "1234",
+        "1234",
+        digest,
+        null,
+        null,
+        encryption,
+        encryption != null,
+        1L,
+        Path.of(UPLOAD_FILE_NAME),
+        encryptionKey,
+        null,
+        tags,
+        null,
+        retention,
+        null
+    );
   }
 }
 

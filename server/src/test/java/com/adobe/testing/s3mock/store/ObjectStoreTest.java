@@ -115,18 +115,18 @@ class ObjectStoreTest {
             ENCODING_GZIP, Files.newInputStream(path), false,
             emptyMap(), null, null, null, emptyList(), Owner.DEFAULT_OWNER);
 
-    assertThat(returnedObject.getKey()).as("Name should be '" + name + "'").isEqualTo(name);
-    assertThat(returnedObject.getContentType()).as(
+    assertThat(returnedObject.key()).as("Name should be '" + name + "'").isEqualTo(name);
+    assertThat(returnedObject.contentType()).as(
         "ContentType should be '" + "binary/octet-stream" + "'").isEqualTo("binary/octet-stream");
-    assertThat(returnedObject.getContentEncoding()).as(
+    assertThat(returnedObject.contentEncoding()).as(
         "ContentEncoding should be '" + ENCODING_GZIP + "'").isEqualTo(ENCODING_GZIP);
-    assertThat(returnedObject.getEtag()).as("MD5 should be '" + md5 + "'")
+    assertThat(returnedObject.etag()).as("MD5 should be '" + md5 + "'")
         .isEqualTo("\"" + md5 + "\"");
-    assertThat(returnedObject.getSize()).as("Size should be '" + size + "'").isEqualTo(size);
+    assertThat(returnedObject.size()).as("Size should be '" + size + "'").isEqualTo(size);
     assertThat(returnedObject.isEncrypted()).as("File should not be encrypted!").isFalse();
 
     assertThat(contentOf(sourceFile, UTF_8)).as("Files should be equal").isEqualTo(
-        contentOf(returnedObject.getDataPath().toFile(), UTF_8));
+        contentOf(returnedObject.dataPath().toFile(), UTF_8));
   }
 
   @Test
@@ -146,18 +146,18 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getKey()).as("Name should be '" + name + "'").isEqualTo(name);
-    assertThat(returnedObject.getContentType()).as(
+    assertThat(returnedObject.key()).as("Name should be '" + name + "'").isEqualTo(name);
+    assertThat(returnedObject.contentType()).as(
         "ContentType should be '" + TEXT_PLAIN + "'").isEqualTo(TEXT_PLAIN);
-    assertThat(returnedObject.getContentEncoding()).as(
+    assertThat(returnedObject.contentEncoding()).as(
         "ContentEncoding should be '" + ENCODING_GZIP + "'").isEqualTo(ENCODING_GZIP);
-    assertThat(returnedObject.getEtag()).as("MD5 should be '" + md5 + "'")
+    assertThat(returnedObject.etag()).as("MD5 should be '" + md5 + "'")
         .isEqualTo("\"" + md5 + "\"");
-    assertThat(returnedObject.getSize()).as("Size should be '" + size + "'").isEqualTo(size);
+    assertThat(returnedObject.size()).as("Size should be '" + size + "'").isEqualTo(size);
     assertThat(returnedObject.isEncrypted()).as("File should not be encrypted!").isFalse();
 
     assertThat(contentOf(sourceFile, UTF_8)).as("Files should be equal").isEqualTo(
-        contentOf(returnedObject.getDataPath().toFile(), UTF_8));
+        contentOf(returnedObject.dataPath().toFile(), UTF_8));
   }
 
   @Test
@@ -184,12 +184,12 @@ class ObjectStoreTest {
             emptyList(),
             Owner.DEFAULT_OWNER);
 
-    assertThat(storedObject.getSize()).as("File length matches").isEqualTo("36");
+    assertThat(storedObject.size()).as("File length matches").isEqualTo("36");
     assertThat(storedObject.isEncrypted()).as("File should be encrypted").isTrue();
-    assertThat(storedObject.getKmsEncryption()).as("Encryption Type matches")
+    assertThat(storedObject.kmsEncryption()).as("Encryption Type matches")
         .isEqualTo(TEST_ENC_TYPE);
-    assertThat(storedObject.getKmsKeyId()).as("Encryption Key matches").isEqualTo(TEST_ENC_KEY);
-    assertThat(storedObject.getEtag()).as("MD5 should not match").isEqualTo("\"" + md5 + "\"");
+    assertThat(storedObject.kmsKeyId()).as("Encryption Key matches").isEqualTo(TEST_ENC_KEY);
+    assertThat(storedObject.etag()).as("MD5 should not match").isEqualTo("\"" + md5 + "\"");
   }
 
   @Test
@@ -217,12 +217,12 @@ class ObjectStoreTest {
 
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
-    assertThat(returnedObject.getSize()).as("File length matches").isEqualTo("36");
+    assertThat(returnedObject.size()).as("File length matches").isEqualTo("36");
     assertThat(returnedObject.isEncrypted()).as("File should be encrypted").isTrue();
-    assertThat(returnedObject.getKmsEncryption()).as("Encryption Type matches")
+    assertThat(returnedObject.kmsEncryption()).as("Encryption Type matches")
         .isEqualTo(TEST_ENC_TYPE);
-    assertThat(returnedObject.getKmsKeyId()).as("Encryption Key matches").isEqualTo(TEST_ENC_KEY);
-    assertThat(returnedObject.getEtag()).as("MD5 should not match").isEqualTo("\"" + md5 + "\"");
+    assertThat(returnedObject.kmsKeyId()).as("Encryption Key matches").isEqualTo(TEST_ENC_KEY);
+    assertThat(returnedObject.etag()).as("MD5 should not match").isEqualTo("\"" + md5 + "\"");
   }
 
   @Test
@@ -242,18 +242,18 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getKey()).as("Name should be '" + name + "'").isEqualTo(name);
-    assertThat(returnedObject.getContentType()).as(
+    assertThat(returnedObject.key()).as("Name should be '" + name + "'").isEqualTo(name);
+    assertThat(returnedObject.contentType()).as(
         "ContentType should be '" + TEXT_PLAIN + "'").isEqualTo(TEXT_PLAIN);
-    assertThat(returnedObject.getContentEncoding()).as(
+    assertThat(returnedObject.contentEncoding()).as(
         "ContentEncoding should be '" + ENCODING_GZIP + "'").isEqualTo(ENCODING_GZIP);
-    assertThat(returnedObject.getEtag()).as("MD5 should be '" + md5 + "'")
+    assertThat(returnedObject.etag()).as("MD5 should be '" + md5 + "'")
         .isEqualTo("\"" + md5 + "\"");
-    assertThat(returnedObject.getSize()).as("Size should be '" + size + "'").isEqualTo(size);
+    assertThat(returnedObject.size()).as("Size should be '" + size + "'").isEqualTo(size);
     assertThat(returnedObject.isEncrypted()).as("File should not be encrypted!").isFalse();
 
     assertThat(contentOf(sourceFile, UTF_8)).as("Files should be equal").isEqualTo(
-        contentOf(returnedObject.getDataPath().toFile(), UTF_8));
+        contentOf(returnedObject.dataPath().toFile(), UTF_8));
   }
 
   @Test
@@ -271,9 +271,9 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getTags().get(0).key()).as("Tag should be present")
+    assertThat(returnedObject.tags().get(0).key()).as("Tag should be present")
         .isEqualTo("foo");
-    assertThat(returnedObject.getTags().get(0).value()).as("Tag value should be bar")
+    assertThat(returnedObject.tags().get(0).value()).as("Tag value should be bar")
         .isEqualTo("bar");
   }
 
@@ -295,9 +295,9 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getTags().get(0).key()).as("Tag should be present")
+    assertThat(returnedObject.tags().get(0).key()).as("Tag should be present")
         .isEqualTo("foo");
-    assertThat(returnedObject.getTags().get(0).value()).as("Tag value should be bar")
+    assertThat(returnedObject.tags().get(0).value()).as("Tag value should be bar")
         .isEqualTo("bar");
   }
 
@@ -320,9 +320,9 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getRetention()).isNotNull();
-    assertThat(returnedObject.getRetention().mode()).isEqualTo(Mode.COMPLIANCE);
-    assertThat(returnedObject.getRetention().retainUntilDate()).isEqualTo(now);
+    assertThat(returnedObject.retention()).isNotNull();
+    assertThat(returnedObject.retention().mode()).isEqualTo(Mode.COMPLIANCE);
+    assertThat(returnedObject.retention().retainUntilDate()).isEqualTo(now);
   }
 
   @Test
@@ -342,8 +342,8 @@ class ObjectStoreTest {
     final S3ObjectMetadata returnedObject =
         objectStore.getS3ObjectMetadata(metadataFrom(TEST_BUCKET_NAME), id);
 
-    assertThat(returnedObject.getLegalHold()).isNotNull();
-    assertThat(returnedObject.getLegalHold().status()).isEqualTo(Status.ON);
+    assertThat(returnedObject.legalHold()).isNotNull();
+    assertThat(returnedObject.legalHold().status()).isEqualTo(Status.ON);
   }
 
   @Test
@@ -369,7 +369,7 @@ class ObjectStoreTest {
 
     assertThat(copiedObject.isEncrypted()).as("File should not be encrypted!").isFalse();
     assertThat(contentOf(sourceFile, UTF_8)).as("Files should be equal!").isEqualTo(
-        contentOf(copiedObject.getDataPath().toFile(), UTF_8));
+        contentOf(copiedObject.dataPath().toFile(), UTF_8));
   }
 
   @Test
@@ -403,9 +403,9 @@ class ObjectStoreTest {
         objectStore.getS3ObjectMetadata(metadataFrom(destinationBucketName), destinationId);
 
     assertThat(copiedObject.isEncrypted()).as("File should be encrypted!").isTrue();
-    assertThat(copiedObject.getSize()).as("Files should have the same length").isEqualTo(
+    assertThat(copiedObject.size()).as("Files should have the same length").isEqualTo(
         String.valueOf(sourceFile.length()));
-    assertThat(copiedObject.getEtag()).as("MD5 should match").isEqualTo("\"" + md5 + "\"");
+    assertThat(copiedObject.etag()).as("MD5 should match").isEqualTo("\"" + md5 + "\"");
   }
 
   @Test

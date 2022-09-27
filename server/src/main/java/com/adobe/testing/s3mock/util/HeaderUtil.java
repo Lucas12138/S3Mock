@@ -49,8 +49,8 @@ public final class HeaderUtil {
    */
   public static Map<String, String> createUserMetadataHeaders(S3ObjectMetadata s3ObjectMetadata) {
     Map<String, String> metadataHeaders = new HashMap<>();
-    if (s3ObjectMetadata.getUserMetadata() != null) {
-      s3ObjectMetadata.getUserMetadata().forEach((key, value) ->
+    if (s3ObjectMetadata.userMetadata() != null) {
+      s3ObjectMetadata.userMetadata().forEach((key, value) ->
           metadataHeaders.put(HEADER_X_AMZ_META_PREFIX + key, value)
       );
     }
@@ -83,9 +83,9 @@ public final class HeaderUtil {
     Map<String, String> encryptionHeaders = new HashMap<>();
     if (s3ObjectMetadata.isEncrypted()) {
       encryptionHeaders.put(X_AMZ_SERVER_SIDE_ENCRYPTION,
-          s3ObjectMetadata.getKmsEncryption());
+          s3ObjectMetadata.kmsEncryption());
       encryptionHeaders.put(X_AMZ_SERVER_SIDE_ENCRYPTION_AWS_KMS_KEY_ID,
-          s3ObjectMetadata.getKmsKeyId());
+          s3ObjectMetadata.kmsKeyId());
     }
     return encryptionHeaders;
   }
