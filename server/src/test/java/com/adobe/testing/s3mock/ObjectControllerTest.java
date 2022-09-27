@@ -298,7 +298,6 @@ class ObjectControllerTest {
             get("/test-bucket/" + key)
                 .param(TAGGING, "ignored")
                 .accept(APPLICATION_XML)
-                .contentType(APPLICATION_XML)
         ).andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(APPLICATION_XML))
         .andExpect(MockMvcResultMatchers.content().xml(MAPPER.writeValueAsString(tagging)));
