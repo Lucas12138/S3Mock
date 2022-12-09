@@ -22,7 +22,7 @@
   <parent>
     <groupId>com.adobe.testing</groupId>
     <artifactId>s3mock-testsupport-reactor</artifactId>
-    <version>2.4.13</version>
+    <version>2.4.13-apple</version>
   </parent>
 
   <artifactId>s3mock-testsupport-common</artifactId>
@@ -34,6 +34,12 @@
     <dependency>
       <groupId>com.adobe.testing</groupId>
       <artifactId>s3mock</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>spring-boot-starter-logging</artifactId>
+          <groupId>org.springframework.boot</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
